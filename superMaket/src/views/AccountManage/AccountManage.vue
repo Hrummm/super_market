@@ -6,16 +6,23 @@
                 <div class="userlist">
                     <el-main>
                         <el-table :data="tableData" style="width: 100%">
-                            <el-table-column label="姓名" width="380">
+                            <el-table-column label="姓名" width="260">
                                 <template slot-scope="scope">
-                                         <p>{{ scope.row.name }}</p>
+                                         <p>{{ scope.row.account }}</p>
                                 </template>
                             </el-table-column>
 
-                            <el-table-column label="用户组" width="380">
+                            <el-table-column label="用户组" width="260">
                                 <template slot-scope="scope">
-                                    <i class="el-icon-time"></i>
-                                    <span style="margin-left: 10px">{{ scope.row.usergroup }}</span>
+                                  
+                                    <span style="margin-left: 10px">{{ scope.row.user_group }}</span>
+                                </template>
+                            </el-table-column>
+
+                              <el-table-column label="时间" width="260">
+                                <template slot-scope="scope">
+                                  
+                                    <span style="margin-left: 10px">{{ scope.row.create_date | filterDate }}</span>
                                 </template>
                             </el-table-column>
 
@@ -48,36 +55,36 @@
 </template>
 
 <script>
+import moment from 'moment';
 export default {
     data(){
         return{
-              tableData: [{
-                usergroup: '普通',
-                name: '王小虎',
-
-                }, {
-                usergroup: '中等',
-                name: '王小虎',
-               
-                }, {
-                usergroup: '中等',
-                name: '王小虎',
-             
-                }, {
-                usergroup: '中等',
-                name: '王小虎',
-               
-                }
-             ]
+              tableData: []
       }
     },
-        methods: {
+    methods: {
       handleEdit(index, row) {
         console.log(index, row);
       },
       handleDelete(index, row) {
         console.log(index, row);
       }
+    },
+    created(){
+        this.request.get('/account/accountlist')
+                    .then(res=>{
+                        this.tableData = res;
+                        
+                    })
+                    .catch(err=>{
+                        console.log(err);
+                        
+                    })
+    },
+    filters:{
+        filterDate(time){
+            return moment(time).format('YYYY-MM-DD hh:mm:ss')
+        }
     }
 }
 
