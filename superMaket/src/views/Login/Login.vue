@@ -36,6 +36,11 @@
 //引入表单验证函数
 import { passwordReg } from '@/utils/validator';
 
+import local from '@/utils/local'
+
+
+
+
 export default {
     data(){
         // 确认密码自定义验证函数
@@ -100,10 +105,27 @@ export default {
                         account: this.loginForm.account,
                         password: this.loginForm.password
                     }
-                    alert('登录成功!')
+                    this.request.post('/login/checklogin',params)
+                                .then(res=>{
+                                    let{code,reason,token} = res;
+                                    if(code===0){
+                                        // 把token 存入浏览器
+                                        local.save('lululu',token)
+                                        this.$message.success(reason)
+                                        //路由跳转
+                                        this.$router.push('/home');
+                                    }
+                                    else if(code===1){
+                                        this.$message.error(reason)
+                                    }
+                                })
+                                .catch(err=>{
+                                    console.log(err);
+                                    
+                                })
+
                     
-                    // 路由跳转
-                    this.$router.push('/home');
+                  
                 } else {
                     console.log('前端验证不通过，不允许提交！')
                     return

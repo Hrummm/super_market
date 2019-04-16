@@ -1,7 +1,15 @@
 import axios from 'axios'
 import qs from 'qs'
-
+import local from '@/utils/local'
 axios.defaults.baseURL = 'http://127.0.0.1:518'
+
+axios.interceptors.request.use(config=>{
+    const token = local.get('lululu');
+
+    
+    config.headers.authorization = `Bearer ${token}`;
+    return config;
+})
 
 export default {
 

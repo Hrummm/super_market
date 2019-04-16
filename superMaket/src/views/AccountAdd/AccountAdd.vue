@@ -15,7 +15,7 @@
           >
             <el-form-item label="账号" prop="account">
               <el-input type="text" v-model.number="loginForm.account" autocomplete="off"></el-input>
-            </el-form-item>
+              </el-form-item>
 
             <el-form-item label="密码" prop="password">
               <el-input type="password" v-model="loginForm.password" autocomplete="off"></el-input>
@@ -51,6 +51,20 @@ import { passwordReg } from "@/utils/validator";
 
 export default {
   data() {
+    //账户验证
+    const checkAccount=(rule,value,callback) => {
+      if (value === "") {
+        // 非空验证
+        callback(new Error("账户不能为空")); // 错误提示
+      } else if (!passwordReg(value)) {
+        callback(
+          new Error("以字母开头，长度在3~6之间，只能包含字符、数字和下划线")
+        ); // 错误提示
+      } else{
+        //检验重复性
+        this.checkAccountExist(callback);
+      }
+    }
     // 确认密码自定义验证函数
     const confirmPassword = (rule, value, callback) => {
       // rules: 验证规则对象 value：用户输入的值 callback: 回调函数
@@ -92,8 +106,7 @@ export default {
         // 账号
         account: [
           //内置的
-          { required: true, message: "请输入账号", trigger: "blur" }, // 非空
-          { min: 3, max: 6, message: "账号长度 3~6 位", trigger: "blur" } // 长度
+          { required: true, validator:checkAccount, trigger:'blur'} // 长度
         ],
         // 密码
         password: [
@@ -137,7 +150,7 @@ export default {
                 console.log(res);
                 
               let { code, reason } = res;
-              if (code === 0) {
+               if (code === 0) {
                 //成功
                     this.$message({
                     type: 'success',
@@ -162,6 +175,23 @@ export default {
           return;
         }
       });
+    },
+    checkAccountExist(callback){
+      this.request.get("/account/checkaccountexist",{account:this.loginForm.account})
+      .then(res => {
+
+        let{code,message}=res;
+        if(code === 0){
+          callback();
+        }else if(code===1){
+          callback(new Error(message));
+        }
+        
+      })
+      .catch(err => {
+        console.log(err);
+        
+      })
     }
   }
 };

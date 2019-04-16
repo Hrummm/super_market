@@ -5,49 +5,45 @@
                 <el-main>
                     <!-- 添加商品的输入框 -->
                     <div class="goods-describe">
-                        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                        <el-form :model="goodsForm" :rules="rules" ref="goodsForm" label-width="100px" class="demo-ruleForm">
                                 <!-- 选择分类 -->
-                                <el-form-item label="活动区域" prop="region">
-                                <el-select v-model="ruleForm.region" placeholder="请选择活动区域">
-                                <el-option label="区域一" value="shanghai"></el-option>
-                                <el-option label="区域二" value="beijing"></el-option>
+                                <el-form-item label="所属分类" prop="goodsClass">
+                                <el-select v-model="goodsForm.goodsClass" placeholder="请选择类别">
+                                <el-option label="日用品" value="daily"></el-option>
+                                <el-option label="小吃" value="snack"></el-option>
+                                <el-option label="饮料" value="drink"></el-option>
+                               
                                 </el-select>
                                 </el-form-item>
                                 <!-- 商品条形码 -->
-                                 <el-form-item label="商品条形码" prop="name">
-                                <el-input v-model="ruleForm.name"></el-input>
-                                <el-button type="primary">生成条形码</el-button>
+                                 <el-form-item label="商品条形码" prop="barcode">
+                                <el-input v-model="goodsForm.barcode" disabled></el-input>
+                                <el-button type="primary" @click = 'getBarCode'>生成条形码</el-button>
                                 </el-form-item>
                                 <!-- 商品名称 -->
                                    <el-form-item label="商品名称" prop="name">
-                                <el-input v-model="ruleForm.name"></el-input>
+                                <el-input v-model="goodsForm.name"></el-input>
                                 </el-form-item>
                                 <!-- 商品售价 -->
-                                   <el-form-item label="商品售价" prop="name">
-                                <el-input v-model="ruleForm.name"></el-input>
+                                   <el-form-item label="商品售价" prop="price">
+                                <el-input v-model="goodsForm.price"></el-input>
                                 </el-form-item>
                                 <!-- 是否促销 -->
-                                   <el-form-item label="是否促销" prop="resource">
-                                <el-radio-group v-model="ruleForm.resource">
+                                   <el-form-item label="是否促销" prop="discount">
+                                <el-radio-group v-model="goodsForm.discount">
                                 <el-radio label="是"></el-radio>
                                 <el-radio label="否"></el-radio>
                                 </el-radio-group>
                                 </el-form-item>
                                 <!-- 商品简介 -->
                                 <el-form-item label="商品简介" prop="desc">
-                                <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+                                <el-input type="textarea" v-model="goodsForm.desc"></el-input>
                                 </el-form-item>
                                
-
-                                
-                              
-                                
-                               
-                               
-
-                                
+  
                                 <el-form-item>
-                                <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
+                                <el-button type="primary" @click="submitForm">添加</el-button>
+                                <el-button type="success" @click="resetForm">重置</el-button>
                                 </el-form-item>
                         </el-form>
                     </div>
@@ -61,17 +57,17 @@
 </template>
 
 <script>
+
+import { getBarCode } from "@/utils/barcode";
 export default {
     data() {
       return {
-        ruleForm: {
+        goodsForm: {
           name: '',
-          region: '',
-          date1: '',
-          date2: '',
-          delivery: false,
-          type: [],
-          resource: '',
+          goodsClass: '',
+          barcode: '',
+          price: '',
+          discount:'',
           desc: ''
         },
         rules: {
@@ -79,40 +75,65 @@ export default {
             { required: true, message: '请输入活动名称', trigger: 'blur' },
             { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
           ],
-          region: [
-            { required: true, message: '请选择活动区域', trigger: 'change' }
+          goodsClass: [
+            { required: true, message: '请选择类别', trigger: 'change' }
           ],
-          date1: [
-            { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
+          barcode: [
+            { required: true, message: '请创建商品条形码', trigger: 'blur' }
           ],
-          date2: [
-            { type: 'date', required: true, message: '请选择时间', trigger: 'change' }
+          price: [
+            { required: true, message: '请输入价格', trigger: 'blur' }
           ],
-          type: [
-            { type: 'array', required: true, message: '请至少选择一个活动性质', trigger: 'change' }
-          ],
-          resource: [
-            { required: true, message: '请选择活动资源', trigger: 'change' }
+          discount: [
+            {  required: true, message: '请选择是否打折', trigger: 'blur' }
           ],
           desc: [
-            { required: true, message: '请填写活动形式', trigger: 'blur' }
+            { required: true, message: '请输入商品描述', trigger: 'blur' }
           ]
-        }
+        },
       };
     },
     methods: {
-      submitForm(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            alert('submit!');
-          } else {
-            console.log('error submit!!');
-            return false;
-          }
-        });
+      getBarCode(){
+        this.goodsForm.barcode = getBarCode();
       },
-      resetForm(formName) {
-        this.$refs[formName].resetFields();
+      submitForm() {
+      this.$refs.goodsForm.validate(valid => {
+          if(valid){
+                  let params = {
+            name:this.goodsForm.name,
+            goodsClass:this.goodsForm.goodsClass,
+            barcode: this.goodsForm.barcode,
+            price: this.goodsForm.price,
+            discount:this.goodsForm.discount,
+            desc: this.goodsForm.desc
+          }
+          this.request.post('/goods/goodsAdd',params)
+                      .then(res=>{
+                        let{code,reason} = res;
+                        if(code===0){
+                          this.$message.success(reason);
+
+                          this.$router.push('/home/goodsmanage');
+                        }
+                        else if(code===1){
+                          this.$message.error(reason)
+                        }
+                        
+                      })
+                      .catch(err=>{
+                        console.log(err);
+                        
+                      })
+          }
+          else{
+            return;
+          }
+    
+      })
+      },
+      resetForm() {
+        
       }
     }
 }
